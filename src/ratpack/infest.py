@@ -108,5 +108,19 @@ def visualize_infestation(
     Returns:
         String representation of the rat infestation
     """
-    # TODO: Implement visualization logic and return formatted report
-    pass
+    visualized = ''
+ 
+    for root, __, files in os.walk(directory):
+        path = root.split(os.sep)
+        visualized += (len(path) - 1) * '---' + os.path.basename(root) + '\n'
+        for file in files:
+            if (file == 'rat'): ### how do we want to visualize this
+                visualized += len(path) * '---' + '🐀\n'
+            else:
+                visualized += len(path) * '---' + file + '\n'
+    
+    if output_format == 'ascii': ### not sure about this
+        return list(bytes(visualized, 'ascii'))
+
+
+    return visualized
