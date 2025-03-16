@@ -17,17 +17,21 @@ from ratpack.infest import RAT_REGISTRY, RAT_TYPES
 
 
 @pytest.fixture
-def temp_test_dir(request):
+def temp_test_dir(tmp_path):
     """Create a temporary test directory for rats and clean up after tests."""
     # TODO: Create a unique test directory and clean it up after tests
-    pass
-
+    test_dir = tmp_path / "rats"
+    test_dir.mkdir(parents=True, exist_ok=True)
+    return test_dir
+    
 
 @pytest.fixture
 def clean_registry():
     """Reset the rat registry before and after tests."""
     # TODO: Clear the registry before and after tests
-    pass
+    RAT_REGISTRY.clear()
+    yield
+    RAT_REGISTRY.clear()
 
 
 def create_test_rat(
