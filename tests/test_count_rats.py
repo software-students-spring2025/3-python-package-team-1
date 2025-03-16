@@ -69,4 +69,12 @@ def test_rat_types_parameter(temp_test_dir, clean_registry):
 def test_statistics_accuracy(temp_test_dir, clean_registry):
     """Test 2.5: Verify that the statistics in the return value are accurate."""
     # TODO: Test the accuracy of the statistics returned by count_rats
-    pass 
+    create_test_rats(temp_test_dir, count=10)  # 10 surface rats
+    # Create burrowed rats
+    create_test_rats(temp_test_dir, count=5, in_burrow=True)  # 5 burrowed rats
+    # Run count_rats() and check statistics
+    counted_rats = count_rats(temp_test_dir, include_burrows=True)
+
+    assert counted_rats["total_rats"] == 15, f"Expected 15 total rats, but got {counted_rats['total_rats']}"
+    assert counted_rats["surface_rats"] == 10, f"Expected 10 surface rats, but got {counted_rats['surface_rats']}"
+    assert counted_rats["burrowed_rats"] == 5, f"Expected 5 burrowed rats, but got {counted_rats['burrowed_rats']}"
