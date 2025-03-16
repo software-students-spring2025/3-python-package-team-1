@@ -71,7 +71,38 @@ def count_rats(
         Dictionary with statistics about the rat infestation
     """
     # TODO: Implement rat counting logic and return statistics
-    pass
+    rat_count = 0
+    burrow_count = 0
+    rat_files = [file for file in os.listdir(directory) if file.endswith(".rat")]
+    
+    if rat_types:
+        filtered_files = []
+        for file in rat_files:
+            matching_rats = [rat for rat in rat_types if rat in file]
+            if matching_rats:
+                filtered_files.append(file)
+        rat_files = filtered_files
+
+    rat_count += len(rat_files)
+
+    if include_burrows:
+        burrow_dir = os.path.join(directory, "burrow")
+        if os.path.exists(burrow_dir):
+            burrow_files = [file for file in os.listdir(burrow_dir) if file.endswith(".rat")]
+            if rat_types:
+                filtered_files = []
+                for file in rat_files:
+                    matching_rats = [rat for rat in rat_types if rat in file]
+                    if matching_rats:
+                        filtered_files.append(file)
+                rat_files = filtered_files
+            burrow_count += len(burrow_files)
+
+    return {
+        "total_rats": rat_count + burrow_count,
+        "surface_rats": rat_count,
+        "burrowed_rats": burrow_count
+    }
 
 def exterminate(
     directory: str = ".",
