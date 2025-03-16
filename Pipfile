@@ -11,4 +11,5 @@ build = "*"
 twine = "*"
 
 [requires]
-python_version = "
+python_version = "3.11"
+python_full_version = "3.11.4"
