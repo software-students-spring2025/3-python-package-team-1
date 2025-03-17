@@ -35,8 +35,13 @@ def infest(
     Returns:
         The decorated function
     """
-    # TODO: Implement the decorator that wraps functions and creates rats when called
-    pass
+    def decorator(func):
+        # TODO: add handling for not decorating functions in this package
+        def wrapper(*args, **kwargs):
+            create_rats(infestation_level, rat_types, burrow_probability)
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 def create_rats(
     infestation_level: int,
@@ -53,7 +58,28 @@ def create_rats(
         directory: Directory to create rats in
     """
     # TODO: Implement rat file creation logic
-    pass
+
+    # cap the infestation level and burrow probability
+    infestation_level = max(1, infestation_level)
+    infestation_level = min(5, infestation_level)
+
+    burrow_probability = max(0.0, burrow_probability)
+    burrow_probability = min(1.0, burrow_probability)
+
+    while infestation_level > 0:
+
+        if burrow_probability > random.random():
+            ## create a new directory
+            ## recursively make burrows and take all rats into burrow
+            new_directory = directory + '/rat burrow'
+            os.makedirs(new_directory)
+            create_rats(infestation_level, rat_types, burrow_probability - 0.2, new_directory)
+            infestation_level = 0
+        else:
+            # TODO: create one rat in current directory
+            pass
+
+        infestation_level -= 1
 
 def count_rats(
     directory: str = ".",
@@ -71,7 +97,38 @@ def count_rats(
         Dictionary with statistics about the rat infestation
     """
     # TODO: Implement rat counting logic and return statistics
-    pass
+    rat_count = 0
+    burrow_count = 0
+    rat_files = [file for file in os.listdir(directory) if file.endswith(".rat")]
+    
+    if rat_types:
+        filtered_files = []
+        for file in rat_files:
+            matching_rats = [rat for rat in rat_types if rat in file]
+            if matching_rats:
+                filtered_files.append(file)
+        rat_files = filtered_files
+
+    rat_count += len(rat_files)
+
+    if include_burrows:
+        burrow_dir = os.path.join(directory, "burrow")
+        if os.path.exists(burrow_dir):
+            burrow_files = [file for file in os.listdir(burrow_dir) if file.endswith(".rat")]
+            if rat_types:
+                filtered_files = []
+                for file in rat_files:
+                    matching_rats = [rat for rat in rat_types if rat in file]
+                    if matching_rats:
+                        filtered_files.append(file)
+                rat_files = filtered_files
+            burrow_count += len(burrow_files)
+
+    return {
+        "total_rats": rat_count + burrow_count,
+        "surface_rats": rat_count,
+        "burrowed_rats": burrow_count
+    }
 
 def exterminate(
     directory: str = ".",
