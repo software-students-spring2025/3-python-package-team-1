@@ -70,14 +70,17 @@ def create_rats(
 
         if burrow_probability > random.random():
             ## create a new directory
-            ## recursively make burrows and take all rats into burrow
-            new_directory = directory + '/rat burrow'
-            os.makedirs(new_directory)
-            create_rats(infestation_level, rat_types, burrow_probability - 0.2, new_directory)
-            infestation_level = 0
-        else:
-            # TODO: create one rat in current directory
-            pass
+            ## iteratively make burrows and take all rats into burrow
+            directory = os.path.join(directory, 'rat burrow')
+            os.makedirs(directory, exist_ok=True)
+            burrow_probability -= 0.2
+
+        # TODO: add more advanced file creation logic
+        rat_count = sum(1 for entry in os.scandir(directory) if entry.is_file() and 'rat' in entry.name)
+
+        file_path = os.path.join(directory, f'rat file id{rat_count + 1}.txt')
+        with open(file_path, 'w') as rat:
+            rat.write('I am a rat')
 
         infestation_level -= 1
 
