@@ -201,5 +201,3 @@ def visualize_infestation(
                     visualized += len(path) * '---' + '''\n()——-()\n \o.o/\n  \ /~~~\n   `''' + '\n' 
 
     return visualized
-
-print(visualize_infestation(output_format='ascii'))
