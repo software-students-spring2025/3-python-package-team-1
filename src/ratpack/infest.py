@@ -165,19 +165,41 @@ def visualize_infestation(
     Returns:
         String representation of the rat infestation
     """
-    visualized = ''
- 
-    for root, __, files in os.walk(directory):
-        path = root.split(os.sep)
-        visualized += (len(path) - 1) * '---' + os.path.basename(root) + '\n'
-        for file in files:
-            if (file == 'rat'): ### how do we want to visualize this
-                visualized += len(path) * '---' + '🐀\n'
-            else:
-                visualized += len(path) * '---' + file + '\n'
-    
-    if output_format == 'ascii': ### not sure about this
-        return list(bytes(visualized, 'ascii'))
+    visualized = ""
 
+    rat_ct = count_rats(directory, include_burrows)
+    
+    if rat_ct['total_rats'] == 0:
+        return 'No rats found \n Directory is clean \n'
+
+    if output_format == 'text':
+        visualized += "Rat Infestation Report\n"
+        visualized += f"Total rats: {rat_ct["total_rats"]} \n"
+        visualized += "Rats by type: \n" #TODO: count rats by type either here or in count_rats function
+        for root, __, files in os.walk(directory):
+            path = root.split(os.sep)
+            fn = os.path.basename(root)
+            if ".rat" in fn or fn == 'burrow':
+                visualized += (len(path) - 1) * '---' + fn + '\n'
+            if fn == 'burrow' and not include_burrows:
+                continue
+            for file in files:
+                if ".rat" in file: ### how do we want to visualize this
+                    visualized += len(path) * '---' + file + '\n'
+    else: #ascii
+        visualized += "RAT INFESTATION ALERT \n"
+        visualized += f"Total rats: {rat_ct["total_rats"]} \n"
+        for root, __, files in os.walk(directory):
+            path = root.split(os.sep)
+            fn = os.path.basename(root)
+            if ".rat" in fn or fn == 'burrow':
+                visualized += (len(path) - 1) * '---' + fn + '\n'
+            if fn == 'burrow' and not include_burrows:
+                continue
+            for file in files:
+                if ".rat" in file: ### how do we want to visualize this
+                    visualized += len(path) * '---' + '''\n()——-()\n \o.o/\n  \ /~~~\n   `''' + '\n' 
 
     return visualized
+
+print(visualize_infestation(output_format='ascii'))
