@@ -12,7 +12,6 @@ from tests.conftest import create_test_rat, create_test_rats, count_actual_rat_f
 
 def test_basic_counting(temp_test_dir, clean_registry):
     """Test 2.1: Verify that count_rats() correctly counts all rats in a directory."""
-    # TODO: Create rat files and verify they are counted correctly
     num_rats = 4
     create_test_rats(temp_test_dir, num_rats)
     counted_rats = count_rats(temp_test_dir)
@@ -20,7 +19,6 @@ def test_basic_counting(temp_test_dir, clean_registry):
 
 def test_directory_parameter(temp_test_dir, clean_registry):
     """Test 2.2: Verify that the directory parameter limits counting to a specific directory."""
-    # TODO: Test that only rats in the specified directory are counted
     create_test_rats(temp_test_dir, 3)
     # create another directory to test against
     # the other directory has different number of rats
@@ -38,7 +36,6 @@ def test_directory_parameter(temp_test_dir, clean_registry):
 
 def test_include_burrows_parameter(temp_test_dir, clean_registry):
     """Test 2.3: Verify that the include_burrows parameter controls whether rats in burrows are counted."""
-    # TODO: Test counting rats with and without including burrows
     # normal rats
     create_test_rats(temp_test_dir, 3)
     # burrow rats
@@ -54,7 +51,6 @@ def test_include_burrows_parameter(temp_test_dir, clean_registry):
 def test_rat_types_parameter(temp_test_dir, clean_registry):
     """Test 2.4: Verify that the rat_types parameter filters rats by type."""
     """ In New York City, the primary rat species are Brown, black and marsh rats"""
-    # TODO: Test counting only specific rat types
     create_test_rat(temp_test_dir, rat_type="brown_rat")
     create_test_rat(temp_test_dir, rat_type="black_rat")
     create_test_rat(temp_test_dir, rat_type="marsh_rat")
@@ -68,7 +64,6 @@ def test_rat_types_parameter(temp_test_dir, clean_registry):
 
 def test_statistics_accuracy(temp_test_dir, clean_registry):
     """Test 2.5: Verify that the statistics in the return value are accurate."""
-    # TODO: Test the accuracy of the statistics returned by count_rats
     create_test_rats(temp_test_dir, count=10)  # 10 surface rats
     # Create burrowed rats
     create_test_rats(temp_test_dir, count=5, in_burrow=True)  # 5 burrowed rats

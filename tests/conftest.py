@@ -19,7 +19,7 @@ from ratpack.infest import RAT_REGISTRY, RAT_TYPES
 @pytest.fixture
 def temp_test_dir(tmp_path):
     """Create a temporary test directory for rats and clean up after tests."""
-    # TODO: Create a unique test directory and clean it up after tests
+    # Create a unique test directory
     test_dir = tmp_path / "rats"
     test_dir.mkdir(parents=True, exist_ok=True)
     return test_dir
@@ -28,9 +28,10 @@ def temp_test_dir(tmp_path):
 @pytest.fixture
 def clean_registry():
     """Reset the rat registry before and after tests."""
-    # TODO: Clear the registry before and after tests
+    # Clear the registry before the test
     RAT_REGISTRY.clear()
     yield
+    # Clear the registry after the test
     RAT_REGISTRY.clear()
 
 
@@ -55,8 +56,51 @@ def create_test_rat(
     Returns:
         Path to the created rat file
     """
-    # TODO: Implement test rat creation logic
-    pass
+    if created_at is None:
+        created_at = time.time()
+    
+    # Create a burrow if needed
+    if in_burrow:
+        burrow_name = f"rat_burrow_{int(created_at)}_{random.randint(1000, 9999)}"
+        burrow_path = os.path.join(directory, burrow_name)
+        os.makedirs(burrow_path, exist_ok=True)
+        
+        # Register the burrow
+        RAT_REGISTRY[burrow_path] = {
+            "type": "burrow",
+            "created_at": created_at,
+            "contains": []
+        }
+        
+        # Create rat inside the burrow
+        rat_name = f"{rat_type}_{int(created_at)}_{random.randint(1000, 9999)}.rat"
+        rat_path = os.path.join(burrow_path, rat_name)
+    else:
+        # Create individual rat
+        rat_name = f"{rat_type}_{int(created_at)}_{random.randint(1000, 9999)}.rat"
+        rat_path = os.path.join(directory, rat_name)
+    
+    # Create rat file with metadata
+    rat_data = {
+        "type": rat_type,
+        "created_at": created_at,
+        "hunger_level": hunger_level,
+        "age": age
+    }
+    
+    with open(rat_path, 'w') as f:
+        json.dump(rat_data, f, indent=2)
+    
+    # Register the rat
+    if in_burrow:
+        RAT_REGISTRY[burrow_path]["contains"].append(rat_path)
+    else:
+        RAT_REGISTRY[rat_path] = {
+            "type": "rat",
+            "data": rat_data
+        }
+    
+    return rat_path
 
 
 def create_test_rats(
@@ -78,8 +122,27 @@ def create_test_rats(
     Returns:
         List of paths to created rat files
     """
-    # TODO: Implement multiple test rats creation logic
-    pass
+    if rat_types is None:
+        rat_types = RAT_TYPES
+    
+    rat_files = []
+    base_time = time.time() - (count * time_spread)
+    
+    # Create rats with different timestamps
+    for i in range(count):
+        rat_type = random.choice(rat_types)
+        created_at = base_time + (i * time_spread)
+        rat_path = create_test_rat(
+            directory=directory,
+            rat_type=rat_type,
+            in_burrow=in_burrow,
+            age=random.randint(1, 500),
+            hunger_level=random.randint(1, 5),
+            created_at=created_at
+        )
+        rat_files.append(rat_path)
+    
+    return rat_files
 
 
 def count_actual_rat_files(directory: str, include_burrows: bool = True) -> Tuple[int, int]:
@@ -92,5 +155,17 @@ def count_actual_rat_files(directory: str, include_burrows: bool = True) -> Tupl
     Returns:
         Tuple of (rat_count, burrow_count)
     """
-    # TODO: Implement file counting logic
-    pass 
+    rat_count = 0
+    burrow_count = 0
+    
+    # Count individual rats
+    rat_count += len(glob.glob(os.path.join(directory, "*.rat")))
+    
+    # Count burrows and rats in burrows
+    if include_burrows:
+        for burrow_dir in glob.glob(os.path.join(directory, "rat_burrow_*")):
+            if os.path.isdir(burrow_dir):
+                burrow_count += 1
+                rat_count += len(glob.glob(os.path.join(burrow_dir, "*.rat")))
+    
+    return rat_count, burrow_count 
