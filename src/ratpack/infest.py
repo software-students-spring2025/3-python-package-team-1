@@ -6,6 +6,7 @@ represented as files on the filesystem.
 
 import os
 import random
+import importlib.resources
 import time
 import json
 import glob
@@ -57,6 +58,7 @@ def create_rats(
         burrow_probability: Chance (0.0-1.0) of creating a rat burrow
         directory: Directory to create rats in
     """
+
     # TODO: Implement rat file creation logic
 
     # cap the infestation level and burrow probability
@@ -65,6 +67,10 @@ def create_rats(
 
     burrow_probability = max(0.0, burrow_probability)
     burrow_probability = min(1.0, burrow_probability)
+
+    # load images directory for rat infesting
+    with importlib.resources.files(__package__).joinpath('images') as images_path:
+        images = [file for file in images_path.iterdir() if file.is_file()]
 
     while infestation_level > 0:
 
@@ -78,9 +84,8 @@ def create_rats(
         # TODO: add more advanced file creation logic
         rat_count = sum(1 for entry in os.scandir(directory) if entry.is_file() and 'rat' in entry.name)
 
-        file_path = os.path.join(directory, f'rat file id{rat_count + 1}.txt')
-        with open(file_path, 'w') as rat:
-            rat.write('I am a rat')
+        file_path = os.path.join(directory, f'rat file id{rat_count + 1}.png')
+        shutil.copy(random.choice(images), file_path)
 
         infestation_level -= 1
 
