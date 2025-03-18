@@ -66,8 +66,6 @@ def create_rats(
         directory: Directory to create rats in
     """
 
-    # TODO: Implement rat file creation logic
-
     # cap the infestation level and burrow probability
     infestation_level = max(1, infestation_level)
     infestation_level = min(5, infestation_level)
@@ -84,15 +82,17 @@ def create_rats(
         if burrow_probability > random.random():
             ## create a new directory
             ## iteratively make burrows and take all rats into burrow
-            directory = os.path.join(directory, 'rat burrow')
+            directory = os.path.join(directory, 'burrow')
             os.makedirs(directory, exist_ok=True)
             burrow_probability -= 0.2
 
         # TODO: add more advanced file creation logic
-        rat_count = sum(1 for entry in os.scandir(directory) if entry.is_file() and 'rat' in entry.name)
+        rat_count = count_rats(directory, include_burrows=False)['total_rats']
 
-        file_path = os.path.join(directory, f'rat file id{rat_count + 1}.png')
-        shutil.copy(random.choice(images), file_path)
+        src_image_path = random.choice(images)
+
+        dest_path = generate_name(rat_types, src_image_path, rat_count)
+        shutil.copy(src_image_path, dest_path)
 
         infestation_level -= 1
 
