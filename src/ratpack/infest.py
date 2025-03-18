@@ -24,7 +24,8 @@ RAT_TYPES = ["sewer_rat", "brown_rat", "black_rat", "fancy_rat", "plague_rat"]
 def infest(
     infestation_level: int = 3,
     rat_types: Optional[List[str]] = None,
-    burrow_probability: float = 0.2
+    burrow_probability: float = 0.2,
+    random_seed: int = None
 ) -> Callable:
     """Decorator that creates rat files when the decorated function is called.
     
@@ -32,10 +33,14 @@ def infest(
         infestation_level: Controls how many rats are created (1-5)
         rat_types: List of rat types to create. If None, all types can appear
         burrow_probability: Chance (0.0-1.0) of creating a rat burrow instead of individual rats
-        
+        random_seed: Set the random seed of the random number generator
     Returns:
         The decorated function
     """
+    # set random seed
+    if random_seed is not None:
+        random.seed(random_seed)
+
     def decorator(func):
         # TODO: add handling for not decorating functions in this package
         def wrapper(*args, **kwargs):
