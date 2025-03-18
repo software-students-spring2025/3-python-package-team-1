@@ -182,7 +182,7 @@ def visualize_infestation(
 
     if output_format == 'text':
         visualized += "Rat Infestation Report\n"
-        visualized += f"Total rats: {rat_ct["total_rats"]} \n"
+        visualized += f"Total rats: {rat_ct['total_rats']} \n"
         visualized += "Rats by type: \n" #TODO: count rats by type either here or in count_rats function
         for root, __, files in os.walk(directory):
             path = root.split(os.sep)
@@ -196,7 +196,7 @@ def visualize_infestation(
                     visualized += len(path) * '---' + file + '\n'
     else: #ascii
         visualized += "RAT INFESTATION ALERT \n"
-        visualized += f"Total rats: {rat_ct["total_rats"]} \n"
+        visualized += f"Total rats: {rat_ct['total_rats']} \n"
         for root, __, files in os.walk(directory):
             path = root.split(os.sep)
             fn = os.path.basename(root)
