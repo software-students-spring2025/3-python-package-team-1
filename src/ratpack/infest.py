@@ -15,6 +15,8 @@ import typing
 from typing import List, Dict, Any, Optional, Callable, Set, Tuple, Union
 import shutil
 
+from pathlib import Path
+
 # Registry to keep track of rat files created
 RAT_REGISTRY: Dict[str, Dict[str, Any]] = {}
 
@@ -93,6 +95,30 @@ def create_rats(
         shutil.copy(random.choice(images), file_path)
 
         infestation_level -= 1
+
+def generate_name(
+    rat_types: List[str],
+    src_path: Path,
+    rat_count: int
+) -> str:
+    """Generates a new rat name.
+    
+    Args:
+        rat_types: List of rat types to create
+        src_path: Path of the image file chosen. We need it to find 
+        the correct file extension
+        rat_count: Rat id number for the directory
+
+    Returns:
+        String of the new rat path to be copied to
+    """
+
+    if rat_types is None:
+        rat_types = RAT_TYPES
+
+    rat_type = random.choice(rat_types)
+
+    return f'{rat_type}_id_{rat_count + 1}{src_path.suffix}'
 
 def count_rats(
     directory: str = ".",
