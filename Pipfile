@@ -4,6 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+pytest = "*"
+build = "*"
+ratpack = {file = ".", editable = true}
 
 [dev-packages]
 pytest = "*"
@@ -11,4 +14,4 @@ build = "*"
 twine = "*"
 
 [requires]
-python_version = "
+python_version = "3"
