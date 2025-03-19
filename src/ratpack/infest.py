@@ -29,7 +29,8 @@ def infest(
     infestation_level: int = 3,
     rat_types: Optional[List[str]] = None,
     burrow_probability: float = 0.2,
-    random_seed: int = None
+    random_seed: int = None,
+    directory: str = "."
 ) -> Callable:
     """Decorator that creates rat files when the decorated function is called.
     
@@ -76,10 +77,12 @@ def create_rats(
     burrow_probability = min(1.0, burrow_probability)
 
     # load images directory for rat infesting
-    with importlib.resources.files(__package__).joinpath('images') as images_path:
-        images = [file for file in images_path.iterdir() if file.is_file()]
+    # with importlib.resources.files(__package__).joinpath('images') as images_path:
+    #     images = [file for file in images_path.iterdir() if file.is_file()]
 
     while infestation_level > 0:
+
+        in_burrow = False
 
         if burrow_probability > random.random():
             ## create a new directory
@@ -87,68 +90,42 @@ def create_rats(
             directory = os.path.join(directory, 'burrow')
             os.makedirs(directory, exist_ok=True)
             burrow_probability -= 0.2
+            in_burrow = True
+
+            # Register the burrow
+            RAT_REGISTRY[directory] = {
+                "type": "burrow",
+                "contains": []
+            }
+            
 
         # TODO: add more advanced file creation logic
         rat_count = count_rats(directory, include_burrows=False)['total_rats']
 
-        src_image_path = random.choice(images)
+        if rat_types is None:
+            rat_types = RAT_TYPES
 
-        dest_path = os.path.join(directory, generate_name(rat_types, src_image_path, rat_count))
-        shutil.copy(src_image_path, dest_path)
+        rat_type = random.choice(rat_types)
 
-        tag_image(dest_path)
+        rat_path = os.path.join(directory, f'{rat_type}_id_{rat_count + 1}.rat')
+
+        rat_data = {
+            "type": rat_type,
+        }
+        
+        with open(rat_path, 'w') as f:
+            json.dump(rat_data, f, indent=2)
+        
+        # Register the rat
+        if in_burrow:
+            RAT_REGISTRY[directory]["contains"].append(rat_path)
+        else:
+            RAT_REGISTRY[rat_path] = {
+                "type": "rat",
+                "data": rat_data
+            }          
 
         infestation_level -= 1
-
-def generate_name(
-    rat_types: List[str],
-    src_path: Path,
-    rat_count: int
-) -> str:
-    """Generates a new rat name.
-    
-    Args:
-        rat_types: List of rat types to create
-        src_path: Path of the image file chosen. We need it to find 
-        the correct file extension
-        rat_count: Rat id number for the directory
-
-    Returns:
-        String of the new rat path to be copied to
-    """
-
-    if rat_types is None:
-        rat_types = RAT_TYPES
-
-    rat_type = random.choice(rat_types)
-
-    return f'{rat_type}_id_{rat_count + 1}{src_path.suffix}'
-
-def tag_image(
-    image_path: Path
-) -> None:
-    """Tags an image with package name for tracking.
-    
-    Args:
-        image_path: pathname of the image to process
-    """
-    image = Image.open(image_path)
-
-    image.info['Description'] = 'ratpack'
-    image.save(image_path, 'PNG')
-
-def check_image(
-    image_path: Path
-) -> bool:
-    """Checks if an image has been created by the package.
-    
-    Args:
-        image_path: pathname of the image to process
-    Returns:
-        True if image matches tag and False otherwise
-    """
-    image = Image.open(image_path)
-    return image.info.get('Description', None) == 'ratpack'
 
 def check_path(
     path: Path
@@ -160,13 +137,8 @@ def check_path(
     Returns:
         True if the path is either a directory named burrow or a image with the correct tags
     """
-    if os.path.isdir(path):
-        return path.name == 'burrow'
-    else:
-        try:
-            return check_image(path)
-        except:
-            return False
+    if not os.path.isdir(path):
+        return 'rat_id' in path and '.rat' in path
 
 def count_rats(
     directory: str = ".",
@@ -201,7 +173,7 @@ def count_rats(
     if include_burrows:
         burrow_dir = os.path.join(directory, "burrow")
         if os.path.exists(burrow_dir):
-            burrow_files = [file for file in os.listdir(burrow_dir) if file.endswith(".rat")]
+            burrow_files = [file for file in os.listdir(burrow_dir) if check_path(os.path.join(directory, file))]
             if rat_types:
                 filtered_files = []
                 for file in rat_files:
@@ -233,9 +205,38 @@ def exterminate(
         
     Returns:
         Dictionary with statistics about the extermination
-    """
-    # TODO: Implement rat removal logic and return statistics
-    pass
+    """      
+    stats = {'rats_removed': 0, 'burrows_removed': 0}  
+    if (burrows_only):
+        stats['surface_rats_left'] = count_rats(directory=directory)['surface_rats']
+
+    types_remove = rat_types if rat_types is not None else RAT_TYPES
+    in_burrow = False
+    for root, __, files in os.walk(directory):
+            fn = os.path.basename(root)
+            if fn == 'burrow':
+                stats['burrows_removed'] += 1
+                in_burrow = True
+            for file in files:
+                if check_path(os.path.join(directory, file)): ### how do we want to visualize this
+                    matching_rats = [rat for rat in types_remove if rat in file]
+                    if matching_rats:
+                        if not in_burrow and burrows_only:
+                            continue
+                        stats['rats_removed'] += 1
+                        if not dry_run:
+                            os.remove(os.path.join(root,file))
+
+    #finally removing burrow as long as its not empty
+    burrow_dir = os.path.join(directory,'burrow')
+    if os.path.exists(burrow_dir):
+        if not dry_run and len(os.listdir(burrow_dir)) == 0:
+            try:
+                shutil.rmtree(burrow_dir)
+            except Exception as e:
+                print(f"Error removing directory '{burrow_dir}': {e}")
+
+    return stats
 
 def visualize_infestation(
     directory: str = ".",
@@ -255,23 +256,22 @@ def visualize_infestation(
     visualized = ""
 
     rat_ct = count_rats(directory, include_burrows)
-    
+
     if rat_ct['total_rats'] == 0:
         return 'No rats found \n Directory is clean \n'
 
     if output_format == 'text':
         visualized += "Rat Infestation Report\n"
         visualized += f"Total rats: {rat_ct['total_rats']} \n"
-        visualized += "Rats by type: \n" #TODO: count rats by type either here or in count_rats function
         for root, __, files in os.walk(directory):
             path = root.split(os.sep)
             fn = os.path.basename(root)
-            if ".rat" in fn or fn == 'burrow':
+            if check_path(root) or fn == 'burrow':
                 visualized += (len(path) - 1) * '---' + fn + '\n'
             if fn == 'burrow' and not include_burrows:
                 continue
             for file in files:
-                if ".rat" in file: ### how do we want to visualize this
+                if check_path(os.path.join(directory, file)): ### how do we want to visualize this
                     visualized += len(path) * '---' + file + '\n'
     else: #ascii
         visualized += "RAT INFESTATION ALERT \n"
@@ -279,12 +279,12 @@ def visualize_infestation(
         for root, __, files in os.walk(directory):
             path = root.split(os.sep)
             fn = os.path.basename(root)
-            if ".rat" in fn or fn == 'burrow':
+            if check_path(root) or fn == 'burrow':
                 visualized += (len(path) - 1) * '---' + fn + '\n'
             if fn == 'burrow' and not include_burrows:
                 continue
             for file in files:
-                if ".rat" in file: ### how do we want to visualize this
-                    visualized += len(path) * '---' + '''\n()——-()\n \o.o/\n  \ /~~~\n   `''' + '\n' 
+                if check_path(os.path.join(directory, file)): ### how do we want to visualize this
+                    visualized += len(path) * '---' + '''ᘛ⁐̤ᕐᐷ''' + '\n' 
 
     return visualized
