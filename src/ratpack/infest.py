@@ -7,10 +7,10 @@ represented as files on the filesystem.
 import os
 import random
 import importlib.resources
+from functools import wraps
 import time
 import json
 import glob
-import functools
 import typing
 from typing import List, Dict, Any, Optional, Callable, Set, Tuple, Union
 import shutil
@@ -48,6 +48,7 @@ def infest(
 
     def decorator(func):
         # TODO: add handling for not decorating functions in this package
+        @wraps(func)
         def wrapper(*args, **kwargs):
             create_rats(infestation_level, rat_types, burrow_probability)
             return func(*args, **kwargs)
