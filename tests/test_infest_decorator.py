@@ -118,16 +118,12 @@ def test_rat_types_parameter(temp_test_dir, clean_registry):
         # Verify that only rats of the specified type were created
         # Check each rat file
         for rat_file in glob.glob("*.rat"):
-            with open(rat_file, 'r') as f:
-                rat_data = f.read()
-                assert specific_rat_type in rat_data
+            assert specific_rat_type in rat_file
                 
         # Check rats in burrows
         for burrow_dir in glob.glob("rat_burrow_*"):
             for rat_file in glob.glob(os.path.join(burrow_dir, "*.rat")):
-                with open(rat_file, 'r') as f:
-                    rat_data = f.read()
-                    assert specific_rat_type in rat_data
+                assert specific_rat_type in rat_file
     finally:
         os.chdir(original_dir)
 
