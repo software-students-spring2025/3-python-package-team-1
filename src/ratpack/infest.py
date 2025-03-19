@@ -15,6 +15,8 @@ import typing
 from typing import List, Dict, Any, Optional, Callable, Set, Tuple, Union
 import shutil
 
+from PIL import Image, ExifTags
+from PIL.ExifTags import TAGS
 from pathlib import Path
 
 # Registry to keep track of rat files created
@@ -91,8 +93,10 @@ def create_rats(
 
         src_image_path = random.choice(images)
 
-        dest_path = generate_name(rat_types, src_image_path, rat_count)
+        dest_path = os.path.join(directory, generate_name(rat_types, src_image_path, rat_count))
         shutil.copy(src_image_path, dest_path)
+
+        tag_image(dest_path)
 
         infestation_level -= 1
 
@@ -120,6 +124,50 @@ def generate_name(
 
     return f'{rat_type}_id_{rat_count + 1}{src_path.suffix}'
 
+def tag_image(
+    image_path: Path
+) -> None:
+    """Tags an image with package name for tracking.
+    
+    Args:
+        image_path: pathname of the image to process
+    """
+    image = Image.open(image_path)
+
+    image.info['Description'] = 'ratpack'
+    image.save(image_path, 'PNG')
+
+def check_image(
+    image_path: Path
+) -> bool:
+    """Checks if an image has been created by the package.
+    
+    Args:
+        image_path: pathname of the image to process
+    Returns:
+        True if image matches tag and False otherwise
+    """
+    image = Image.open(image_path)
+    return image.info.get('Description', None) == 'ratpack'
+
+def check_path(
+    path: Path
+) -> bool:
+    """Checks if an path is valid for the package to modify.
+    
+    Args:
+        path: pathname
+    Returns:
+        True if the path is either a directory named burrow or a image with the correct tags
+    """
+    if os.path.isdir(path):
+        return path.name == 'burrow'
+    else:
+        try:
+            return check_image(path)
+        except:
+            return False
+
 def count_rats(
     directory: str = ".",
     include_burrows: bool = True,
@@ -138,7 +186,7 @@ def count_rats(
     # TODO: Implement rat counting logic and return statistics
     rat_count = 0
     burrow_count = 0
-    rat_files = [file for file in os.listdir(directory) if file.endswith(".rat")]
+    rat_files = [file for file in os.listdir(directory) if check_path(os.path.join(directory, file))]
     
     if rat_types:
         filtered_files = []
