@@ -171,10 +171,6 @@ def count_rats(
             subdir_path = os.path.join(directory, subdir)
             if os.path.isdir(subdir_path) and "burrow" in subdir:
                 burrow_files = [file for file in os.listdir(subdir_path) if file.endswith(".rat")]
-                
-                if rat_types:
-                    burrow_files = [file for file in burrow_files if any(rat in file for rat in rat_types)]
-
                 burrow_count += len(burrow_files)
 
     return {
