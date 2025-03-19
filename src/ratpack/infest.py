@@ -15,10 +15,6 @@ import typing
 from typing import List, Dict, Any, Optional, Callable, Set, Tuple, Union
 import shutil
 
-from PIL import Image, ExifTags
-from PIL.ExifTags import TAGS
-from pathlib import Path
-
 # Registry to keep track of rat files created
 RAT_REGISTRY: Dict[str, Dict[str, Any]] = {}
 
@@ -28,8 +24,7 @@ RAT_TYPES = ["sewer_rat", "brown_rat", "black_rat", "fancy_rat", "plague_rat"]
 def infest(
     infestation_level: int = 3,
     rat_types: Optional[List[str]] = None,
-    burrow_probability: float = 0.2,
-    random_seed: int = None
+    burrow_probability: float = 0.2
 ) -> Callable:
     """Decorator that creates rat files when the decorated function is called.
     
@@ -37,14 +32,10 @@ def infest(
         infestation_level: Controls how many rats are created (1-5)
         rat_types: List of rat types to create. If None, all types can appear
         burrow_probability: Chance (0.0-1.0) of creating a rat burrow instead of individual rats
-        random_seed: Set the random seed of the random number generator
+        
     Returns:
         The decorated function
     """
-    # set random seed
-    if random_seed is not None:
-        random.seed(random_seed)
-
     def decorator(func):
         # TODO: add handling for not decorating functions in this package
         def wrapper(*args, **kwargs):
@@ -68,6 +59,8 @@ def create_rats(
         directory: Directory to create rats in
     """
 
+    # TODO: Implement rat file creation logic
+
     # cap the infestation level and burrow probability
     infestation_level = max(1, infestation_level)
     infestation_level = min(5, infestation_level)
@@ -84,89 +77,17 @@ def create_rats(
         if burrow_probability > random.random():
             ## create a new directory
             ## iteratively make burrows and take all rats into burrow
-            directory = os.path.join(directory, 'burrow')
+            directory = os.path.join(directory, 'rat burrow')
             os.makedirs(directory, exist_ok=True)
             burrow_probability -= 0.2
 
         # TODO: add more advanced file creation logic
-        rat_count = count_rats(directory, include_burrows=False)['total_rats']
+        rat_count = sum(1 for entry in os.scandir(directory) if entry.is_file() and 'rat' in entry.name)
 
-        src_image_path = random.choice(images)
-
-        dest_path = os.path.join(directory, generate_name(rat_types, src_image_path, rat_count))
-        shutil.copy(src_image_path, dest_path)
-
-        tag_image(dest_path)
+        file_path = os.path.join(directory, f'rat file id{rat_count + 1}.png')
+        shutil.copy(random.choice(images), file_path)
 
         infestation_level -= 1
-
-def generate_name(
-    rat_types: List[str],
-    src_path: Path,
-    rat_count: int
-) -> str:
-    """Generates a new rat name.
-    
-    Args:
-        rat_types: List of rat types to create
-        src_path: Path of the image file chosen. We need it to find 
-        the correct file extension
-        rat_count: Rat id number for the directory
-
-    Returns:
-        String of the new rat path to be copied to
-    """
-
-    if rat_types is None:
-        rat_types = RAT_TYPES
-
-    rat_type = random.choice(rat_types)
-
-    return f'{rat_type}_id_{rat_count + 1}{src_path.suffix}'
-
-def tag_image(
-    image_path: Path
-) -> None:
-    """Tags an image with package name for tracking.
-    
-    Args:
-        image_path: pathname of the image to process
-    """
-    image = Image.open(image_path)
-
-    image.info['Description'] = 'ratpack'
-    image.save(image_path, 'PNG')
-
-def check_image(
-    image_path: Path
-) -> bool:
-    """Checks if an image has been created by the package.
-    
-    Args:
-        image_path: pathname of the image to process
-    Returns:
-        True if image matches tag and False otherwise
-    """
-    image = Image.open(image_path)
-    return image.info.get('Description', None) == 'ratpack'
-
-def check_path(
-    path: Path
-) -> bool:
-    """Checks if an path is valid for the package to modify.
-    
-    Args:
-        path: pathname
-    Returns:
-        True if the path is either a directory named burrow or a image with the correct tags
-    """
-    if os.path.isdir(path):
-        return path.name == 'burrow'
-    else:
-        try:
-            return check_image(path)
-        except:
-            return False
 
 def count_rats(
     directory: str = ".",
@@ -186,30 +107,24 @@ def count_rats(
     # TODO: Implement rat counting logic and return statistics
     rat_count = 0
     burrow_count = 0
-    rat_files = [file for file in os.listdir(directory) if check_path(os.path.join(directory, file))]
+
+    rat_files = [file for file in os.listdir(directory) if file.endswith(".rat")]
     
     if rat_types:
-        filtered_files = []
-        for file in rat_files:
-            matching_rats = [rat for rat in rat_types if rat in file]
-            if matching_rats:
-                filtered_files.append(file)
-        rat_files = filtered_files
+        rat_files = [file for file in rat_files if any(rat in file for rat in rat_types)]
 
     rat_count += len(rat_files)
 
     if include_burrows:
-        burrow_dir = os.path.join(directory, "burrow")
-        if os.path.exists(burrow_dir):
-            burrow_files = [file for file in os.listdir(burrow_dir) if file.endswith(".rat")]
-            if rat_types:
-                filtered_files = []
-                for file in rat_files:
-                    matching_rats = [rat for rat in rat_types if rat in file]
-                    if matching_rats:
-                        filtered_files.append(file)
-                rat_files = filtered_files
-            burrow_count += len(burrow_files)
+        for subdir in os.listdir(directory):
+            subdir_path = os.path.join(directory, subdir)
+            if os.path.isdir(subdir_path) and "burrow" in subdir:
+                burrow_files = [file for file in os.listdir(subdir_path) if file.endswith(".rat")]
+                
+                if rat_types:
+                    burrow_files = [file for file in burrow_files if any(rat in file for rat in rat_types)]
+
+                burrow_count += len(burrow_files)
 
     return {
         "total_rats": rat_count + burrow_count,
