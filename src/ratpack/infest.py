@@ -15,6 +15,11 @@ import typing
 from typing import List, Dict, Any, Optional, Callable, Set, Tuple, Union
 import shutil
 
+from PIL import Image, ExifTags
+from PIL.ExifTags import TAGS
+from pathlib import Path
+
+
 # Registry to keep track of rat files created
 RAT_REGISTRY: Dict[str, Dict[str, Any]] = {}
 
