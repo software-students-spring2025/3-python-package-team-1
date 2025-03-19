@@ -77,8 +77,8 @@ def create_rats(
     burrow_probability = min(1.0, burrow_probability)
 
     # load images directory for rat infesting
-    # with importlib.resources.files(__package__).joinpath('images') as images_path:
-    #     images = [file for file in images_path.iterdir() if file.is_file()]
+    with importlib.resources.files(__package__).joinpath('images') as images_path:
+        images = [file for file in images_path.iterdir() if file.is_file()]
 
     while infestation_level > 0:
 
@@ -102,6 +102,8 @@ def create_rats(
         # TODO: add more advanced file creation logic
         rat_count = count_rats(directory, include_burrows=False)['total_rats']
 
+        src_image_path = random.choice(images)
+
         if rat_types is None:
             rat_types = RAT_TYPES
 
@@ -111,10 +113,10 @@ def create_rats(
 
         rat_data = {
             "type": rat_type,
+            "id": rat_count + 1
         }
         
-        with open(rat_path, 'w') as f:
-            json.dump(rat_data, f, indent=2)
+        shutil.copy(src_image_path, rat_path)
         
         # Register the rat
         if in_burrow:
