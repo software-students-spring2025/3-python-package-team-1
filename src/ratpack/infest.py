@@ -15,10 +15,6 @@ import typing
 from typing import List, Dict, Any, Optional, Callable, Set, Tuple, Union
 import shutil
 
-from PIL import Image, ExifTags
-from PIL.ExifTags import TAGS
-from pathlib import Path
-
 # Registry to keep track of rat files created
 RAT_REGISTRY: Dict[str, Dict[str, Any]] = {}
 
@@ -28,9 +24,7 @@ RAT_TYPES = ["sewer_rat", "brown_rat", "black_rat", "fancy_rat", "plague_rat"]
 def infest(
     infestation_level: int = 3,
     rat_types: Optional[List[str]] = None,
-    burrow_probability: float = 0.2,
-    random_seed: int = None,
-    directory: str = "."
+    burrow_probability: float = 0.2
 ) -> Callable:
     """Decorator that creates rat files when the decorated function is called.
     
@@ -38,14 +32,10 @@ def infest(
         infestation_level: Controls how many rats are created (1-5)
         rat_types: List of rat types to create. If None, all types can appear
         burrow_probability: Chance (0.0-1.0) of creating a rat burrow instead of individual rats
-        random_seed: Set the random seed of the random number generator
+        
     Returns:
         The decorated function
     """
-    # set random seed
-    if random_seed is not None:
-        random.seed(random_seed)
-
     def decorator(func):
         # TODO: add handling for not decorating functions in this package
         @wraps(func)
@@ -70,6 +60,8 @@ def create_rats(
         directory: Directory to create rats in
     """
 
+    # TODO: Implement rat file creation logic
+
     # cap the infestation level and burrow probability
     infestation_level = max(1, infestation_level)
     infestation_level = min(5, infestation_level)
@@ -88,7 +80,7 @@ def create_rats(
         if burrow_probability > random.random():
             ## create a new directory
             ## iteratively make burrows and take all rats into burrow
-            directory = os.path.join(directory, 'burrow')
+            directory = os.path.join(directory, 'rat burrow')
             os.makedirs(directory, exist_ok=True)
             burrow_probability -= 0.2
             in_burrow = True
@@ -161,30 +153,24 @@ def count_rats(
     # TODO: Implement rat counting logic and return statistics
     rat_count = 0
     burrow_count = 0
-    rat_files = [file for file in os.listdir(directory) if check_path(os.path.join(directory, file))]
+
+    rat_files = [file for file in os.listdir(directory) if file.endswith(".rat")]
     
     if rat_types:
-        filtered_files = []
-        for file in rat_files:
-            matching_rats = [rat for rat in rat_types if rat in file]
-            if matching_rats:
-                filtered_files.append(file)
-        rat_files = filtered_files
+        rat_files = [file for file in rat_files if any(rat in file for rat in rat_types)]
 
     rat_count += len(rat_files)
 
     if include_burrows:
-        burrow_dir = os.path.join(directory, "burrow")
-        if os.path.exists(burrow_dir):
-            burrow_files = [file for file in os.listdir(burrow_dir) if check_path(os.path.join(directory, file))]
-            if rat_types:
-                filtered_files = []
-                for file in rat_files:
-                    matching_rats = [rat for rat in rat_types if rat in file]
-                    if matching_rats:
-                        filtered_files.append(file)
-                rat_files = filtered_files
-            burrow_count += len(burrow_files)
+        for subdir in os.listdir(directory):
+            subdir_path = os.path.join(directory, subdir)
+            if os.path.isdir(subdir_path) and "burrow" in subdir:
+                burrow_files = [file for file in os.listdir(subdir_path) if file.endswith(".rat")]
+                
+                if rat_types:
+                    burrow_files = [file for file in burrow_files if any(rat in file for rat in rat_types)]
+
+                burrow_count += len(burrow_files)
 
     return {
         "total_rats": rat_count + burrow_count,
