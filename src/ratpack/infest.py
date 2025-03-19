@@ -85,7 +85,7 @@ def create_rats(
         if burrow_probability > random.random():
             ## create a new directory
             ## iteratively make burrows and take all rats into burrow
-            directory = os.path.join(directory, 'rat burrow')
+            directory = os.path.join(directory, 'burrow')
             os.makedirs(directory, exist_ok=True)
             burrow_probability -= 0.2
             in_burrow = True
