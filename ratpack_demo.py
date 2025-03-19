@@ -1,4 +1,4 @@
-from ratpack import infest, visualize_infestation, count_rats, exterminate
+from src.ratpack.infest import infest, visualize_infestation, count_rats, exterminate
 
 '''Function providing code examples for the ratpack package'''
 
@@ -11,6 +11,7 @@ demo_fn()
 print(count_rats())
 
 visualization = visualize_infestation()
+print(visualization)
 
 extermination_statistics = exterminate(dry_run=True)
 

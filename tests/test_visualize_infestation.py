@@ -19,6 +19,7 @@ def test_text_output_format(temp_test_dir, clean_registry):
     # Verify the visualization contains expected information
     assert "Rat Infestation Report" in visualization
     assert f"Total rats: {rat_count}" in visualization
+    assert "Rats by type" in visualization
     
     # Verify that the text format doesn't contain ASCII art
     assert "**" not in visualization

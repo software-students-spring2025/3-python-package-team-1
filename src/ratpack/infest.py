@@ -159,10 +159,16 @@ def count_rats(
     rat_count = 0
     burrow_count = 0
 
+    rats_by_type = {rt:0 for rt in RAT_TYPES}
+
     rat_files = [file for file in os.listdir(directory) if file.endswith(".rat")]
     
     if rat_types:
         rat_files = [file for file in rat_files if any(rat in file for rat in rat_types)]
+
+    for file in rat_files:
+        matching_rats = [rat for rat in RAT_TYPES if rat in file] if not rat_types else [rat for rat in rat_types if rat in file]
+        rats_by_type[matching_rats[0]] = rats_by_type[matching_rats[0]] + 1 if matching_rats[0] in rats_by_type.keys() else  0
 
     rat_count += len(rat_files)
 
@@ -172,11 +178,15 @@ def count_rats(
             if os.path.isdir(subdir_path) and "burrow" in subdir:
                 burrow_files = [file for file in os.listdir(subdir_path) if file.endswith(".rat")]
                 burrow_count += len(burrow_files)
+                for file in burrow_files:
+                    matching_rats = [rat for rat in RAT_TYPES if rat in file] if not rat_types else [rat for rat in rat_types if rat in file]
+                    rats_by_type[matching_rats[0]] += 1
 
     return {
         "total_rats": rat_count + burrow_count,
         "surface_rats": rat_count,
-        "burrowed_rats": burrow_count
+        "burrowed_rats": burrow_count,
+        "rats_by_type": rats_by_type
     }
 
 def exterminate(
@@ -253,6 +263,7 @@ def visualize_infestation(
     if output_format == 'text':
         visualized += "Rat Infestation Report\n"
         visualized += f"Total rats: {rat_ct['total_rats']} \n"
+        visualized += f"Rats by type: {rat_ct['rats_by_type']} \n"
         for root, __, files in os.walk(directory):
             path = root.split(os.sep)
             fn = os.path.basename(root)
