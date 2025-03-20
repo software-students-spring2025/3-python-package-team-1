@@ -4,7 +4,7 @@
 
 RatPack is a humorous Python package that simulates rat infestations in your code! It provides tools to create, count, visualize, and exterminate virtual rat infestations represented as files on your filesystem.
 
-**[View on PyPI](https://pypi.org/project/ratpack/)** 
+**[View on PyPI](https://pypi.org/project/ratpack/0.1.1/)** 
 
 ## Description
 
@@ -333,9 +333,9 @@ No special environment variables are needed to run RatPack. The package works di
 ## Contributors
 
 - [Patrick Cao](https://github.com/Novrain7) - pc3135@nyu.edu
-- [Helen Ho](https://github.com/helenho) - hth2016@nyu.edu
-- [Noah Perelmuter](https://github.com/noahperelmuter) - np2446@nyu.edu
-- [Apollo Wyndham](https://github.com/apollowyndham) - acw8241@nyu.edu
+- [Helen Ho](https://github.com/hhelenho) - hth2016@nyu.edu
+- [Noah Perelmuter](https://github.com/np2446) - np2446@nyu.edu
+- [Apollo Wyndham](https://github.com/a-wyndham1) - acw8241@nyu.edu
 
 ## License
 
