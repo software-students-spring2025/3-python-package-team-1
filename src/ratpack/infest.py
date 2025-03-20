@@ -65,7 +65,7 @@ def create_rats(
         directory: Directory to create rats in
     """
 
-    # TODO: Implement rat file creation logic
+    original_dir = directory
 
     # cap the infestation level and burrow probability
     infestation_level = max(1, infestation_level)
@@ -80,24 +80,13 @@ def create_rats(
 
     while infestation_level > 0:
 
-        in_burrow = False
-
         if burrow_probability > random.random():
             ## create a new directory
             ## iteratively make burrows and take all rats into burrow
             directory = os.path.join(directory, 'burrow')
             os.makedirs(directory, exist_ok=True)
             burrow_probability -= 0.2
-            in_burrow = True
 
-            # Register the burrow
-            RAT_REGISTRY[directory] = {
-                "type": "burrow",
-                "contains": []
-            }
-            
-
-        # TODO: add more advanced file creation logic
         rat_count = count_rats(directory, include_burrows=False)['total_rats']
 
         src_image_path = random.choice(images)
@@ -108,24 +97,35 @@ def create_rats(
         rat_type = random.choice(rat_types)
 
         rat_path = os.path.join(directory, f'{rat_type}_id_{rat_count + 1}.rat')
-
-        rat_data = {
-            "type": rat_type,
-            "id": rat_count + 1
-        }
         
         shutil.copy(src_image_path, rat_path)
         
-        # Register the rat
-        if in_burrow:
-            RAT_REGISTRY[directory]["contains"].append(rat_path)
-        else:
-            RAT_REGISTRY[rat_path] = {
-                "type": "rat",
-                "data": rat_data
-            }          
-
         infestation_level -= 1
+
+    # Register the rats
+        reg_rats(directory=original_dir)   
+
+def reg_rats(
+        directory: str = "."
+) -> None:
+    in_burrow = False
+    for root, __, files in os.walk(directory):
+            fn = os.path.basename(root)
+            if fn == 'burrow':
+                in_burrow = True
+                 # Register the burrow
+                RAT_REGISTRY["burrow"] = {
+                    "type": "burrow",
+                    "contains": []
+                }
+            for file in files:
+                if check_path(os.path.join(directory, file)): 
+                    if in_burrow:
+                        RAT_REGISTRY["burrow"]["contains"].append(os.path.join(root,file))
+                    else:
+                        RAT_REGISTRY[os.path.join(root,file)] = {
+                            "type": "rat"
+                        }      
 
 def check_path(
     path: Path
@@ -233,8 +233,12 @@ def exterminate(
         if not dry_run and len(os.listdir(burrow_dir)) == 0:
             try:
                 shutil.rmtree(burrow_dir)
+                RAT_REGISTRY.pop("burrow")
             except Exception as e:
                 print(f"Error removing directory '{burrow_dir}': {e}")
+
+    if not burrows_only and not dry_run:
+        RAT_REGISTRY.clear()
 
     return stats
 
