@@ -24,6 +24,8 @@ jobs:
   deliver:
     needs: [build]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +35,7 @@ jobs:
         run: |
           pipenv install build
           pipenv run python -m build .
-      - name: Publish to PyPI test server
+      - name: Publish to PyPI  server
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
