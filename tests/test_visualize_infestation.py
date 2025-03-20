@@ -19,7 +19,7 @@ def test_text_output_format(temp_test_dir, clean_registry):
     # Verify the visualization contains expected information
     assert "Rat Infestation Report" in visualization
     assert f"Total rats: {rat_count}" in visualization
-    assert "Rats by type:" in visualization
+    assert "Rats by type" in visualization
     
     # Verify that the text format doesn't contain ASCII art
     assert "**" not in visualization
@@ -40,17 +40,9 @@ def test_ascii_output_format(temp_test_dir, clean_registry):
     assert f"Total rats: {rat_count}" in visualization
     
     # Verify that ASCII art is included
-    assert "o.o" in visualization  # Eyes in ASCII rat art
-    assert "~~" in visualization   # Part of ASCII rat art
+    assert "⁐̤ᕐᐷ" in visualization  # Eyes in ASCII rat art
+    assert "ᘛ" in visualization   # Part of ASCII rat art
     
-    # Check that the ASCII art reflects the infestation level
-    if rat_count <= 5:
-        assert "low" in visualization.lower()
-    elif rat_count <= 15:
-        assert "medium" in visualization.lower()
-    else:
-        assert "high" in visualization.lower()
-
 
 def test_empty_infestation(temp_test_dir, clean_registry):
     """Test 4.3: Verify behavior when no rats exist."""

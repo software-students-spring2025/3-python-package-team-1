@@ -14,6 +14,9 @@ def test_basic_counting(temp_test_dir, clean_registry):
     """Test 2.1: Verify that count_rats() correctly counts all rats in a directory."""
     num_rats = 4
     create_test_rats(temp_test_dir, num_rats)
+
+    print("Files in temp_test_dir:", os.listdir(temp_test_dir)) # Comment out later 
+
     counted_rats = count_rats(temp_test_dir)
     assert counted_rats["total_rats"] == num_rats, f"Expected {num_rats}, but got {counted_rats['total_rats']}"
 
