@@ -4,7 +4,7 @@
 
 RatPack is a humorous Python package that simulates rat infestations in your code! It provides tools to create, count, visualize, and exterminate virtual rat infestations represented as files on your filesystem.
 
-**[View on PyPI](https://pypi.org/project/ratpack/0.1.2/)** 
+**[View on PyPI](https://pypi.org/project/ratpack/0.1.3/)** 
 
 ## Description
 
