@@ -2,7 +2,7 @@ from src.ratpack.infest import infest, visualize_infestation, count_rats, exterm
 
 '''Function providing code examples for the ratpack package'''
 
-@infest(infestation_level=4)
+@infest(infestation_level=3, rat_types=["sewer_rat", "brown_rat"])
 def demo_fn():
     return 1+1
 
