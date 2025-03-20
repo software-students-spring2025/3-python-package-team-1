@@ -7,7 +7,7 @@ name = "ratpack"
 description = "A rat infestation package that includes a decorator that will create rat files and burrows in the folder structure alongside other methods to remove them and count them."
 version = "0.1.1"
 authors = [
-  { name="Foo Barstein", email="foo.barstein@onepotcooking.com" },
+  { name="Patrick Cao", email="pc3135@nyu.edu" },
   { name="Helen Ho", email="hth2016@nyu.edu" },
   { name="Noah Perelmuter", email="np2446@nyu.edu" },
   { name="Apollo Wyndham", email="acw8241@nyu.edu" }
